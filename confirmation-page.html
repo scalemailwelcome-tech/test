@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Call Is Booked</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111113;
+    --surface-2: #1a1a1f;
+    --border: #222228;
+    --text: #f0f0f5;
+    --text-muted: #8a8a9a;
+    --accent: #4f6ef7;
+    --accent-glow: rgba(79, 110, 247, 0.25);
+    --green: #34d399;
+    --green-muted: rgba(52, 211, 153, 0.12);
+    --red: #f87171;
+    --red-muted: rgba(248, 113, 113, 0.10);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  section {
+    padding: 80px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section:last-of-type { border-bottom: none; }
+
+  /* ── Typography ── */
+  h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; }
+  h2 { font-size: clamp(1.5rem, 3.5vw, 2.25rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
+  h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.35; }
+  p  { color: var(--text-muted); font-size: 1.05rem; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 16px 32px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px var(--accent-glow);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover {
+    background: var(--surface);
+    border-color: var(--text-muted);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+
+  /* ── Progress Steps ── */
+  .steps {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+  }
+  .step.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .step.done {
+    background: var(--green-muted);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .step-num {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--border);
+  }
+  .step.active .step-num { background: var(--accent); color: #fff; }
+  .step.done .step-num { background: var(--green); color: #0a0a0a; }
+
+  /* ═══════════════════════════════
+     SECTION 1 — HERO
+     ═══════════════════════════════ */
+  .hero {
+    padding-top: 60px;
+    text-align: center;
+  }
+  .hero h1 { margin-bottom: 16px; }
+  .hero > p { max-width: 560px; margin: 0 auto 40px; }
+
+  .calendar-card {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 40px;
+    margin-bottom: 32px;
+  }
+  .calendar-card .check-icon {
+    width: 48px; height: 48px;
+    background: var(--green-muted);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  .calendar-card .date {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .calendar-card .meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .hero-cta { margin-top: 24px; }
+
+  /* ═══════════════════════════════
+     SECTION 2 — VSL
+     ═══════════════════════════════ */
+  .vsl-section { text-align: center; }
+  .vsl-section h2 { margin-bottom: 12px; }
+  .vsl-section > p { max-width: 520px; margin: 0 auto 36px; }
+
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .video-wrapper iframe,
+  .video-wrapper .video-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .video-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+  .play-btn {
+    width: 72px; height: 72px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px var(--accent-glow);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .play-btn:hover { transform: scale(1.08); }
+  .play-btn svg { margin-left: 4px; }
+
+  /* ═══════════════════════════════
+     SECTION 3 — HOW THE CALL WORKS
+     ═══════════════════════════════ */
+  .call-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 36px;
+  }
+  .call-step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: left;
+  }
+  .call-step-card .num {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .call-step-card h3 { margin-bottom: 8px; font-size: 1.05rem; }
+  .call-step-card p { font-size: 0.9rem; }
+
+  .micro-cta {
+    margin-top: 36px;
+    padding: 20px 28px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(79, 110, 247, 0.3);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+
+  /* ═══════════════════════════════
+     SECTION 4 — WHY WE'RE DIFFERENT
+     ═══════════════════════════════ */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 36px;
+  }
+  @media (max-width: 600px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  .compare-col {
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+  .compare-col.bad {
+    background: var(--red-muted);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+  }
+  .compare-col.good {
+    background: var(--green-muted);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+  }
+  .compare-col h3 {
+    margin-bottom: 20px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-col.bad h3 { color: var(--red); }
+  .compare-col.good h3 { color: var(--green); }
+
+  .compare-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .compare-col li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .compare-col li .icon { flex-shrink: 0; font-size: 1rem; margin-top: 2px; }
+  .compare-col.bad li .icon { color: var(--red); }
+  .compare-col.good li .icon { color: var(--green); }
+
+  /* ═══════════════════════════════
+     SECTION 5 — PROOF
+     ═══════════════════════════════ */
+  .proof-section { text-align: center; }
+  .proof-section h2 { margin-bottom: 12px; }
+  .proof-section > p { max-width: 480px; margin: 0 auto 40px; }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: left;
+  }
+  .result-card .stat {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .result-card .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .result-card .desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .logos-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 40px;
+    opacity: 0.45;
+  }
+  .logos-row span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════
+     SECTION 6 — BREAKOUT VIDEOS
+     ═══════════════════════════════ */
+  .breakout-section h2 { margin-bottom: 8px; }
+  .breakout-section > p { margin-bottom: 36px; }
+
+  .breakout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) {
+    .breakout-grid { grid-template-columns: 1fr; }
+  }
+
+  .breakout-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 22px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .breakout-card:hover {
+    border-color: var(--accent);
+    background: var(--surface-2);
+  }
+  .breakout-card .play-icon {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    background: var(--accent-glow);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
+  .breakout-card .play-icon svg { width: 16px; height: 16px; }
+  .breakout-card .info h3 { font-size: 0.95rem; margin-bottom: 4px; }
+  .breakout-card .info p { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ═══════════════════════════════
+     SECTION 7 — FAQ
+     ═══════════════════════════════ */
+  .faq-section h2 { margin-bottom: 32px; }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: left;
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: inherit;
+  }
+  .faq-question:hover { background: var(--surface-2); }
+  .faq-question .chevron {
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+    color: var(--text-muted);
+  }
+  .faq-item.open .faq-question .chevron { transform: rotate(180deg); }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .faq-answer-inner {
+    padding: 0 24px 20px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  /* ═══════════════════════════════
+     SECTION 8 — FINAL CTA
+     ═══════════════════════════════ */
+  .final-cta {
+    text-align: center;
+    padding: 100px 0;
+    border-bottom: none;
+  }
+  .final-cta h2 { margin-bottom: 16px; }
+  .final-cta > p { max-width: 480px; margin: 0 auto 32px; }
+
+  .checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 36px;
+  }
+  .checklist li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    list-style: none;
+  }
+  .checklist li .check { color: var(--green); font-size: 1.1rem; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 40px 24px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Animations ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     PROGRESS BAR
+     ═══════════════════════════════════════════ -->
+<div class="container" style="padding-top: 32px;">
+  <div class="steps">
+    <div class="step done">
+      <span class="step-num">&#10003;</span> Booked Call
+    </div>
+    <div class="step active">
+      <span class="step-num">2</span> Watch &amp; Prepare
+    </div>
+    <div class="step">
+      <span class="step-num">3</span> Strategy Call
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — HERO
+     ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="container fade-up">
+    <span class="tag">Confirmed</span>
+    <h1>Your Call Is Booked&nbsp;&mdash;<br/>Now Let's Make Sure It's Worth&nbsp;Your&nbsp;Time</h1>
+    <p>Watch this short video so you know exactly what to expect&mdash;and whether this is right for you.</p>
+
+    <div class="calendar-card">
+      <div class="check-icon">&#10003;</div>
+      <div class="date" id="callDate">[Your Call Date &amp; Time]</div>
+      <div class="meta">30-minute strategy call &bull; We only take 5 calls per day</div>
+      <a href="#" class="btn btn-outline" style="font-size:0.9rem; padding:12px 24px;">Add to Calendar</a>
+    </div>
+
+    <div class="hero-cta">
+      <a href="#vsl" class="btn btn-primary">Watch This First &darr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2 — VSL
+     ═══════════════════════════════════════════ -->
+<section class="vsl-section" id="vsl">
+  <div class="container fade-up">
+    <span class="tag">Step 2 of 3</span>
+    <h2>Before We Speak, Watch This<br/>(2&ndash;5 Minutes)</h2>
+    <p>This will answer the main questions you're already thinking about.</p>
+
+    <div class="video-wrapper">
+      <!-- Replace the placeholder below with your embed code -->
+      <div class="video-placeholder">
+        <div class="play-btn">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <span>Click to play &mdash; 4 min 32 sec</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3 — HOW THE CALL WORKS
+     ═══════════════════════════════════════════ -->
+<section>
+  <div class="container fade-up">
+    <div style="text-align:center;">
+      <span class="tag">The Call</span>
+      <h2>What Will Happen On The Call</h2>
+    </div>
+
+    <div class="call-steps-grid">
+      <div class="call-step-card">
+        <div class="num">Step 01</div>
+        <h3>Audit Your Current Setup</h3>
+        <p>We'll look at your current email strategy, flows, and revenue to find gaps.</p>
+      </div>
+      <div class="call-step-card">
+        <div class="num">Step 02</div>
+        <h3>Identify Growth Opportunities</h3>
+        <p>Pinpoint the biggest revenue levers you're not pulling yet.</p>
+      </div>
+      <div class="call-step-card">
+        <div class="num">Step 03</div>
+        <h3>Map Out the Game Plan</h3>
+        <p>Show you exactly what we would do and the results you can expect.</p>
+      </div>
+      <div class="call-step-card">
+        <div class="num">Step 04</div>
+        <h3>Decide Together</h3>
+        <p>No pressure. We'll figure out if it makes sense to work together.</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <div class="micro-cta">Show up prepared &mdash; this is where results start.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4 — WHY WE'RE DIFFERENT
+     ═══════════════════════════════════════════ -->
+<section>
+  <div class="container fade-up">
+    <div style="text-align:center; margin-bottom: 8px;">
+      <span class="tag">The Difference</span>
+      <h2>Why Most Agencies Fail<br/>(And What We Do Differently)</h2>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col bad">
+        <h3><span>&#10007;</span> Most Agencies</h3>
+        <ul>
+          <li><span class="icon">&#10007;</span> Generic, copy-paste strategy</li>
+          <li><span class="icon">&#10007;</span> Junior team takes over after onboarding</li>
+          <li><span class="icon">&#10007;</span> Results plateau after 60&ndash;90 days</li>
+          <li><span class="icon">&#10007;</span> You end up managing them</li>
+          <li><span class="icon">&#10007;</span> No transparency on what's working</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <h3><span>&#10003;</span> How We Operate</h3>
+        <ul>
+          <li><span class="icon">&#10003;</span> Senior-level execution from day one</li>
+          <li><span class="icon">&#10003;</span> Data-driven, custom strategy per brand</li>
+          <li><span class="icon">&#10003;</span> Continuous optimization &mdash; no plateaus</li>
+          <li><span class="icon">&#10003;</span> You get weekly updates; we handle everything</li>
+          <li><span class="icon">&#10003;</span> Full visibility via Slack + live dashboards</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 5 — PROOF
+     ═══════════════════════════════════════════ -->
+<section class="proof-section">
+  <div class="container fade-up">
+    <span class="tag">Results</span>
+    <h2>Proof That This Actually Works</h2>
+    <p>Real numbers from real brands. No fluff.</p>
+
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="stat">+147%</div>
+        <div class="label">Email Revenue Increase</div>
+        <div class="desc">DTC skincare brand went from $38K to $94K/mo in email revenue within 90 days.</div>
+      </div>
+      <div class="result-card">
+        <div class="stat">$1.2M</div>
+        <div class="label">Revenue Generated</div>
+        <div class="desc">Fashion brand generated $1.2M in attributable email revenue in 6 months.</div>
+      </div>
+      <div class="result-card">
+        <div class="stat">42%</div>
+        <div class="label">AOV Increase</div>
+        <div class="desc">Supplement brand increased average order value by 42% through post-purchase flows.</div>
+      </div>
+    </div>
+
+    <div class="logos-row">
+      <span>Brand A</span>
+      <span>Brand B</span>
+      <span>Brand C</span>
+      <span>Brand D</span>
+      <span>Brand E</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 6 — BREAKOUT VIDEOS
+     ═══════════════════════════════════════════ -->
+<section class="breakout-section">
+  <div class="container fade-up">
+    <div style="text-align:center;">
+      <span class="tag">Before Your Call</span>
+      <h2>Watch These Before Your Call</h2>
+      <p>These answer the most common questions we get. Each is 3&ndash;5 minutes.</p>
+    </div>
+
+    <div class="breakout-grid">
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>Why do most email agencies fail?</h3>
+          <p>4 min &bull; The #1 reason results die after 90 days</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>What results can I realistically expect?</h3>
+          <p>3 min &bull; Honest expectations, no hype</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>How fast will I see results?</h3>
+          <p>3 min &bull; Realistic timelines for each phase</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>What does your process look like?</h3>
+          <p>5 min &bull; Audit &rarr; Roadmap &rarr; Execution &rarr; Scale</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>How much work is required from me?</h3>
+          <p>3 min &bull; Spoiler: very little</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>What makes you different from others?</h3>
+          <p>4 min &bull; This is worth watching twice</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>Is this a fit for my brand?</h3>
+          <p>3 min &bull; Who we work best with</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>What happens if it doesn't work?</h3>
+          <p>3 min &bull; Our risk reversal explained</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>How do you increase revenue specifically?</h3>
+          <p>5 min &bull; Segmentation, flows, AOV &amp; more</p>
+        </div>
+      </div>
+
+      <div class="breakout-card">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8,5 20,12 8,19"/></svg>
+        </div>
+        <div class="info">
+          <h3>Why should I trust you?</h3>
+          <p>4 min &bull; Experience, process &amp; philosophy</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 7 — FAQ
+     ═══════════════════════════════════════════ -->
+<section class="faq-section">
+  <div class="container fade-up">
+    <div style="text-align:center;">
+      <span class="tag">FAQ</span>
+      <h2>Common Questions</h2>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Do I need a big email list?
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">No. We've driven significant revenue for brands with lists as small as 5,000 subscribers. What matters more is the quality of your list and the strategy behind it. We'll assess your list on the call.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Do you work with my niche?
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">We work with e-commerce brands across most verticals&mdash;skincare, supplements, fashion, food &amp; beverage, home goods, and more. If you sell products online, we can likely help. We'll confirm fit on the call.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          How long are your contracts?
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">We typically work on a month-to-month basis after an initial onboarding period. We earn your business every month&mdash;no long-term lock-ins. Details on the call.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Do you write and design everything?
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Yes. Copywriting, design, strategy, segmentation, A/B testing, and technical setup&mdash;we handle it all. You just approve the work and watch the revenue come in.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What if I already have an email setup?
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Even better. We'll audit what you have, keep what's working, and rebuild what isn't. Most brands we work with already have some email infrastructure&mdash;we just make it perform at a much higher level.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 8 — FINAL CTA
+     ═══════════════════════════════════════════ -->
+<section class="final-cta">
+  <div class="container fade-up">
+    <span class="tag">Final Step</span>
+    <h2>Show Up Prepared</h2>
+    <p>The people who get the best results from this call are the ones who show up ready to make a decision.</p>
+
+    <ul class="checklist">
+      <li><span class="check">&#10003;</span> Watch the videos above</li>
+      <li><span class="check">&#10003;</span> Come with questions</li>
+      <li><span class="check">&#10003;</span> Be ready to move forward</li>
+    </ul>
+
+    <a href="#" class="btn btn-primary" style="font-size:1.1rem; padding:18px 40px;">
+      Add This Call To Your Calendar Now
+    </a>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container">
+    &copy; 2026 Your Brand. All rights reserved.
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════ -->
+<script>
+  // ── Scroll fade-in ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ── FAQ accordion ──
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const answer = item.querySelector('.faq-answer');
+      const isOpen = item.classList.contains('open');
+
+      // close all
+      document.querySelectorAll('.faq-item.open').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-answer').style.maxHeight = '0';
+      });
+
+      if (!isOpen) {
+        item.classList.add('open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
